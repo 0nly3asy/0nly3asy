@@ -1,0 +1,35 @@
+const fs = require('fs-extra');
+const path = require('node:path');
+const { Client, Collection, GatewayIntentBits } = require('discord.js');
+const  token  = process.env.TOKEN;
+const { QuickDB } = require('quick.db');
+const jsonc = require('jsonc');
+const db = new QuickDB();
+
+// ... (Previous code remains unchanged)
+
+	async function close(res) {
+		interaction.channel.send({
+			content: client.locales.ticketTranscriptCreated.replace('TRANSCRIPTURL', `<PASTE_RAW_URL_HERE>`),
+		}).catch(e => console.log(e));
+		await client.db.set(`tickets_${interaction.channel.id}.transcriptURL`, `<PASTE_RAW_URL_HERE>`);
+		const ticket = await client.db.get(`tickets_${interaction.channel.id}`);
+
+		const row = new client.discord.ActionRowBuilder()
+			.addComponents(
+				new client.discord.ButtonBuilder()
+					.setCustomId('deleteTicket')
+					.setLabel(client.locales.other.deleteTicketButtonMSG)
+					.setStyle(client.discord.ButtonStyle.Danger),
+			);
+
+		interaction.channel.send({
+			embeds: [JSON.parse(JSON.stringify(client.locales.embeds.ticketClosed)
+				.replace('TICKETCOUNT', ticket.id)
+				.replace('REASON', ticket.closeReason.replace(/[\n\r]/g, '\\n'))
+				.replace('CLOSERNAME', interaction.user.tag))],
+			components: [row]
+		}).catch(e => console.log(e));
+
+		// ... (Additional code remains unchanged)
+	};
